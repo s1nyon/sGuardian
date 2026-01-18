@@ -62,7 +62,7 @@ void IMUManager::parseDMPData() {
     // 2. 解析世界坐标系加速度 (排除重力，且不随传感器翻转而改变轴向)
     _mpu.dmpGetAccel(&aa, _currentData.FIFOBuffer);
     _mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
-    _mpu.dmpGetLinearAccelInWorld(&aaWorld, &aaReal, &q);
+    _mpu.dmpConvertToWorldFrame(&aaWorld, &aaReal, &q);
 
     _currentData.aaWorld.x = aaWorld.x;
     _currentData.aaWorld.y = aaWorld.y;

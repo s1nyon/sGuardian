@@ -1,5 +1,4 @@
 .pio/build/esp32-s3-devkitc-1/src/main.cpp.o: src/main.cpp \
- .pio/libdeps/esp32-s3-devkitc-1/MPU6050/src/I2Cdev.h \
  /Users/fahaxikipdd/.platformio/packages/framework-arduinoespressif32/cores/esp32/Arduino.h \
  /Users/fahaxikipdd/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp_arduino_version.h \
  /Users/fahaxikipdd/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s3/include/freertos/include/freertos/FreeRTOS.h \
@@ -180,9 +179,12 @@
  /Users/fahaxikipdd/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s3/include/esp_hw_support/include/soc/esp32/spiram.h \
  /Users/fahaxikipdd/.platformio/packages/framework-arduinoespressif32/cores/esp32/io_pin_remap.h \
  /Users/fahaxikipdd/.platformio/packages/framework-arduinoespressif32/cores/esp32/Arduino.h \
+ lib/Drivers/IMUHandler/IMUManager.h \
+ .pio/libdeps/esp32-s3-devkitc-1/MPU6050/src/I2Cdev.h \
  /Users/fahaxikipdd/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src/Wire.h \
  /Users/fahaxikipdd/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp32-hal.h \
  .pio/libdeps/esp32-s3-devkitc-1/MPU6050/src/MPU6050_6Axis_MotionApps20.h \
  .pio/libdeps/esp32-s3-devkitc-1/MPU6050/src/MPU6050.h \
  .pio/libdeps/esp32-s3-devkitc-1/MPU6050/src/I2Cdev.h \
- .pio/libdeps/esp32-s3-devkitc-1/MPU6050/src/helper_3dmath.h
+ .pio/libdeps/esp32-s3-devkitc-1/MPU6050/src/helper_3dmath.h \
+ lib/Models/SystemData.h

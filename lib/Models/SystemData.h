@@ -11,13 +11,19 @@ public:
     struct Data {
         float totalAcc;
         bool isFall;
-        float ybr[3];
+        float ypr[3];
     };
 
-    void setIMUData() {
-        
+    void setIMUData(float y, float p, float r, float acc) {
+        _data.ypr[0] = y;
+        _data.ypr[1] = p;
+        _data.ypr[2] = r;
+        _data.totalAcc = acc;
     }
 
+    Data getData() {
+        return _data;
+    }
     
     
 private:

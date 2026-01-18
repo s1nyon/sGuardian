@@ -1,8 +1,6 @@
 #pragma once
 #include "I2Cdev.h"
 #include "MPU6050_6Axis_MotionApps20.h"
-#include "MPU6050_6Axis_MotionApps612.h" // Uncomment this library to work with DMP 6.12 and comment on the above library.
-
 
 /* OUTPUT FORMAT DEFINITION-------------------------------------------------------------------------------------------
 - Use "OUTPUT_READABLE_QUATERNION" for quaternion commponents in [w, x, y, z] format. Quaternion does not 
@@ -31,8 +29,6 @@ reference frame. Yaw is relative if there is no magnetometer present.
 #define OUTPUT_READABLE_WORLDACCEL
 //#define OUTPUT_TEAPOT
 
-int const INTERRUPT_PIN = 5;  // Define the interruption #0 pin
-bool blinkState;
 
 struct IMUData {
     /*---MPU6050 Control/Status Variables---*/
