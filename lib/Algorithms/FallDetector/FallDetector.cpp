@@ -46,7 +46,7 @@ FallState FallDetector::update(float yaw, float pitch, float roll, float acc) {
                 _state = FallState::IDLE;
                 Serial.println("[Alg] User stood up. Clear.");
             }
-            // 增加：如果 acc 有明显的连续波动（说明人在动，不论姿态），也应退出
+
             else if (acc > 12000) { 
                 _state = FallState::IDLE;
                 Serial.println("[Alg] Significant movement detected. Clear.");
