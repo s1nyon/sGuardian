@@ -18,7 +18,7 @@ FallState FallDetector::update(float yaw, float pitch, float roll, float acc) {
         case FallState::POTENTIAL_IMPACT:
             // 2秒观察期内不执行逻辑，只等待
             if (now - _timer > STABLE_WINDOW) {
-                if (abs(pitch) > LAY_THRESHOLD || abs(roll) > LAY_THRESHOLD) {
+                if (abs(pitch) < LAY_THRESHOLD || abs(roll) < LAY_THRESHOLD) {
                     _state = FallState::CONFIRMED;
                     _timer = now; // 重新计时，用于计算 10s 静止
                     Serial.printf("[Alg] >>> FALL CONFIRMED! (P:%.1f, R:%.1f)\n", pitch, roll);
@@ -42,7 +42,7 @@ FallState FallDetector::update(float yaw, float pitch, float roll, float acc) {
 
             // 优化：不仅判断接近0度，也要判断是否真的“站立”
             // 如果你发现传感器经常翻转，可以调宽判定范围
-            if (abs(pitch) < 30.0f && abs(roll) < 30.0f) {
+            if (abs(pitch) > 30.0f || abs(roll) > 30.0f) {
                 _state = FallState::IDLE;
                 Serial.println("[Alg] User stood up. Clear.");
             }
