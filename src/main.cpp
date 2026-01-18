@@ -28,7 +28,7 @@
 
 #include "I2Cdev.h"
 #include "MPU6050_6Axis_MotionApps20.h"
-//#include "MPU6050_6Axis_MotionApps612.h" // Uncomment this library to work with DMP 6.12 and comment on the above library.
+// #include "MPU6050_6Axis_MotionApps612.h" // Uncomment this library to work with DMP 6.12 and comment on the above library.
 
 /* MPU6050 default I2C address is 0x68*/
 MPU6050 mpu;
@@ -59,7 +59,7 @@ reference frame. Yaw is relative if there is no magnetometer present.
 //#define OUTPUT_READABLE_QUATERNION
 //#define OUTPUT_READABLE_EULER
 //#define OUTPUT_READABLE_REALACCEL
-//#define OUTPUT_READABLE_WORLDACCEL
+// #define OUTPUT_READABLE_WORLDACCEL
 //#define OUTPUT_TEAPOT
 
 int const INTERRUPT_PIN = 5;  // Define the interruption #0 pin

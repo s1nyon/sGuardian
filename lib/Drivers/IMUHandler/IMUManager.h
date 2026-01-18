@@ -1,8 +1,9 @@
 #pragma once
 #include "I2Cdev.h"
 #include "MPU6050_6Axis_MotionApps20.h"
+#include "MPU6050_6Axis_MotionApps612.h" // Uncomment this library to work with DMP 6.12 and comment on the above library.
 
-MPU6050 mpu;
+
 /* OUTPUT FORMAT DEFINITION-------------------------------------------------------------------------------------------
 - Use "OUTPUT_READABLE_QUATERNION" for quaternion commponents in [w, x, y, z] format. Quaternion does not 
 suffer from gimbal lock problems but is harder to parse or process efficiently on a remote host or software 
@@ -27,44 +28,49 @@ reference frame. Yaw is relative if there is no magnetometer present.
 //#define OUTPUT_READABLE_QUATERNION
 //#define OUTPUT_READABLE_EULER
 //#define OUTPUT_READABLE_REALACCEL
-//#define OUTPUT_READABLE_WORLDACCEL
+#define OUTPUT_READABLE_WORLDACCEL
 //#define OUTPUT_TEAPOT
 
 int const INTERRUPT_PIN = 5;  // Define the interruption #0 pin
 bool blinkState;
 
-/*---MPU6050 Control/Status Variables---*/
-bool DMPReady = false;  // Set true if DMP init was successful
-uint8_t MPUIntStatus;   // Holds actual interrupt status byte from MPU
-uint8_t devStatus;      // Return status after each device operation (0 = success, !0 = error)
-uint16_t packetSize;    // Expected DMP packet size (default is 42 bytes)
-uint8_t FIFOBuffer[64]; // FIFO storage buffer
+struct IMUData {
+    /*---MPU6050 Control/Status Variables---*/
+    bool DMPReady = false;  // Set true if DMP init was successful
+    uint8_t MPUIntStatus;   // Holds actual interrupt status byte from MPU
+    uint8_t devStatus;      // Return status after each device operation (0 = success, !0 = error)
+    uint16_t packetSize;    // Expected DMP packet size (default is 42 bytes)
+    uint8_t FIFOBuffer[64]; // FIFO storage buffer
 
-/*---Orientation/Motion Variables---*/ 
-Quaternion q;           // [w, x, y, z]         Quaternion container
-VectorInt16 aa;         // [x, y, z]            Accel sensor measurements
-VectorInt16 gy;         // [x, y, z]            Gyro sensor measurements
-VectorInt16 aaReal;     // [x, y, z]            Gravity-free accel sensor measurements
-VectorInt16 aaWorld;    // [x, y, z]            World-frame accel sensor measurements
-VectorFloat gravity;    // [x, y, z]            Gravity vector
-float euler[3];         // [psi, theta, phi]    Euler angle container
-float ypr[3];           // [yaw, pitch, roll]   Yaw/Pitch/Roll container and gravity vector
+    /*---Orientation/Motion Variables---*/ 
+    Quaternion q;           // [w, x, y, z]         Quaternion container
+    VectorInt16 aa;         // [x, y, z]            Accel sensor measurements
+    VectorInt16 gy;         // [x, y, z]            Gyro sensor measurements
+    VectorInt16 aaReal;     // [x, y, z]            Gravity-free accel sensor measurements
+    VectorInt16 aaWorld;    // [x, y, z]            World-frame accel sensor measurements
+    VectorFloat gravity;    // [x, y, z]            Gravity vector
+    float euler[3];         // [psi, theta, phi]    Euler angle container
+    float ypr[3];           // [yaw, pitch, roll]   Yaw/Pitch/Roll container and gravity vector
+    float totalLinearAcc;
 
-/*-Packet structure for InvenSense teapot demo-*/ 
-uint8_t teapotPacket[14] = { '$', 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0x00, 0x00, '\r', '\n' };
-
-/*------Interrupt detection routine------*/
-volatile bool MPUInterrupt = false;     // Indicates whether MPU6050 interrupt pin has gone high
-void DMPDataReady() {
-  MPUInterrupt = true;
-}
+    bool isDataNew;
+};
 
 class IMUManager {
 public:
     IMUManager();
-    ~IMUManager();
+    
+    bool init(int interruptPin);
+
+    void update();
+
+    const IMUData& getIMUData() const;
 
 
+private:
+    MPU6050 _mpu;
+    IMUData _currentData;
 
+    void parseDMPData();
 
 };

@@ -1,78 +1,77 @@
 #include <IMUHandler/IMUManager.h>
 
-IMUManager::IMUManager()
-{
-    #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
-        Wire.begin();
-        Wire.setClock(400000); // 400kHz I2C clock. Comment on this line if having compilation difficulties
-    #elif I2CDEV_IMPLEMENTATION == I2CDEV_BUILTIN_FASTWIRE
-        Fastwire::setup(400, true);
-    #endif
-
-    Serial.begin(115200);
-    while(!Serial);
-
-    Serial.println(F("Initializing I2C devices..."));
-    mpu.initialize();
-    pinMode(INTERRUPT_PIN, INPUT);
-
-    Serial.println(F("Testing MPU6050 connection..."));
-    if(mpu.testConnection() == false) {
-        Serial.println("MPU6050 connection failed");
-        while(true);
-    }
-    else {
-        Serial.println("MPU6050 connection successful");
-    }
-
-    Serial.println(F("\nSend any character to begin: "));
-    while (Serial.available() && Serial.read());
-    while (!Serial.available());
-    while (Serial.available() && Serial.read());
-
-    Serial.println(F("Initializing DMP..."));
-    devStatus = mpu.dmpInitialize();
-
-    mpu.setXGyroOffset(0);
-    mpu.setYGyroOffset(0);
-    mpu.setZGyroOffset(0);
-    mpu.setXAccelOffset(0);
-    mpu.setYAccelOffset(0);
-    mpu.setZAccelOffset(0);
-
-    if (devStatus == 0) {
-        mpu.CalibrateAccel(6);
-        mpu.CalibrateGyro(6);
-        Serial.println("These are the Active offsets: ");
-        mpu.PrintActiveOffsets();
-        Serial.println(F("Enabling DMP..."));
-        mpu.setDMPEnabled(true);
-        /*Enable Arduino interrupt detection*/
-    Serial.print(F("Enabling interrupt detection (Arduino external interrupt "));
-    Serial.print(digitalPinToInterrupt(INTERRUPT_PIN));
-    Serial.println(F(")..."));
-    attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), DMPDataReady, RISING);
-    MPUIntStatus = mpu.getIntStatus();
-
-    /* Set the DMP Ready flag so the main loop() function knows it is okay to use it */
-    Serial.println(F("DMP ready! Waiting for first interrupt..."));
-    DMPReady = true;
-    packetSize = mpu.dmpGetFIFOPacketSize(); //Get expected DMP packet size for later comparison
-    } 
-    else {
-        Serial.print(F("DMP Initialization failed (code ")); //Print the error code
-        Serial.print(devStatus);
-        Serial.println(F(")"));
-        // 1 = initial memory load failed
-        // 2 = DMP configuration updates failed
-    }
-    pinMode(LED_BUILTIN, OUTPUT);
-
-
-
-
+IMUManager::IMUManager() {
+    _currentData = {}; 
 }
 
-IMUManager::~IMUManager() {
+bool IMUManager::init(int interruptPin) {
+    Wire.begin();
+    Wire.setClock(400000);
+
+    _mpu.initialize();
+    pinMode(interruptPin, INPUT);
+    if(!_mpu.testConnection()) return false;
+
+    _currentData.devStatus = _mpu.dmpInitialize();
+
+    /* Supply your gyro offsets here, scaled for min sensitivity */
+    _mpu.setXGyroOffset(0);
+    _mpu.setYGyroOffset(0);
+    _mpu.setZGyroOffset(0);
+    _mpu.setXAccelOffset(0);
+    _mpu.setYAccelOffset(0);
+    _mpu.setZAccelOffset(0);
+
+    if(_currentData.devStatus == 0) {
+        _mpu.setDMPEnabled(true);
+        _currentData.packetSize = _mpu.dmpGetFIFOPacketSize();
+        return true;
+    }
+    else {
+        Serial.printf("DMP Init Error: %d\n", _currentData.devStatus);
+        return false;
+    }
+}
+
+void IMUManager::update() {
+    _currentData.isDataNew = false;
+
+    if(_mpu.dmpGetCurrentFIFOPacket(_currentData.FIFOBuffer)) {
+        parseDMPData();
+        _currentData.isDataNew = true;
+    }
+}
+
+void IMUManager::parseDMPData() {
+    Quaternion q;
+    VectorInt16 aa;
+    VectorInt16 aaReal;
+    VectorInt16 aaWorld;
+    VectorFloat gravity;
+    float ypr[3];
+
+    // 1. 解析姿态角
+    _mpu.dmpGetQuaternion(&q, _currentData.FIFOBuffer);
+    _mpu.dmpGetGravity(&gravity, &q);
+    _mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
     
+    _currentData.ypr[0] = ypr[0] * 180 / M_PI;
+    _currentData.ypr[1] = ypr[1] * 180 / M_PI;
+    _currentData.ypr[2] = ypr[2] * 180 / M_PI;
+
+    // 2. 解析世界坐标系加速度 (排除重力，且不随传感器翻转而改变轴向)
+    _mpu.dmpGetAccel(&aa, _currentData.FIFOBuffer);
+    _mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
+    _mpu.dmpGetLinearAccelInWorld(&aaWorld, &aaReal, &q);
+
+    _currentData.aaWorld.x = aaWorld.x;
+    _currentData.aaWorld.y = aaWorld.y;
+    _currentData.aaWorld.z = aaWorld.z;
+
+    // 3. 计算合加速度模长 (跌倒检测最重要的原始指标)
+    _currentData.totalLinearAcc = sqrt(pow(aaWorld.x, 2) + pow(aaWorld.y, 2) + pow(aaWorld.z, 2));
+}
+
+const IMUData& IMUManager::getIMUData() const {
+    return _currentData;
 }
