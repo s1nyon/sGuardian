@@ -23,6 +23,9 @@ bool IMUManager::init(int interruptPin) {
     _mpu.setZAccelOffset(0);
 
     if(_currentData.devStatus == 0) {
+        _mpu.CalibrateAccel(2);  // Calibration Time: generate offsets and calibrate our MPU6050
+        _mpu.CalibrateGyro(3);
+        _mpu.PrintActiveOffsets();
         _mpu.setDMPEnabled(true);
         _currentData.packetSize = _mpu.dmpGetFIFOPacketSize();
         return true;
@@ -75,3 +78,5 @@ void IMUManager::parseDMPData() {
 const IMUData& IMUManager::getIMUData() const {
     return _currentData;
 }
+
+

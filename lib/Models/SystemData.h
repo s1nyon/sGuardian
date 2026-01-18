@@ -10,7 +10,7 @@ public:
 
     struct Data {
         float totalAcc;
-        bool isFall;
+        int fallLevel;
         float ypr[3];
     };
 
@@ -19,6 +19,10 @@ public:
         _data.ypr[1] = p;
         _data.ypr[2] = r;
         _data.totalAcc = acc;
+    }
+
+    void setIsFall(int level) {
+        _data.fallLevel = level;
     }
 
     Data getData() {

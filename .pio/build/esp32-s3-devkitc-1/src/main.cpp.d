@@ -187,4 +187,4 @@
  .pio/libdeps/esp32-s3-devkitc-1/MPU6050/src/MPU6050.h \
  .pio/libdeps/esp32-s3-devkitc-1/MPU6050/src/I2Cdev.h \
  .pio/libdeps/esp32-s3-devkitc-1/MPU6050/src/helper_3dmath.h \
- lib/Models/SystemData.h
+ lib/Algorithms/FallDetector/FallDetector.h lib/Models/SystemData.h
