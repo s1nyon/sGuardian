@@ -1,5 +1,6 @@
 #pragma once
 #include <Arduino.h>
+#include <freertos/semphr.h>
 
 class SystemData {
 public:
@@ -9,29 +10,34 @@ public:
     }
 
     struct Data {
+        float ypr[3];
         float totalAcc;
         int fallLevel;
-        float ypr[3];
+        uint32_t steps;
     };
 
-    void setIMUData(float y, float p, float r, float acc) {
-        _data.ypr[0] = y;
-        _data.ypr[1] = p;
-        _data.ypr[2] = r;
-        _data.totalAcc = acc;
-    }
-
-    void setIsFall(int level) {
-        _data.fallLevel = level;
+    void setData(float y, float p, float r, float acc, int fall, uint32_t steps) {
+        // 将 portMAX_DELAY 改为短时间等待，防止死锁
+        if (xSemaphoreTake(_mutex, pdMS_TO_TICKS(5))) {
+            _data.ypr[0] = y; _data.ypr[1] = p; _data.ypr[2] = r;
+            _data.totalAcc = acc;
+            _data.fallLevel = fall;
+            _data.steps = steps;
+            xSemaphoreGive(_mutex);
+        }
     }
 
     Data getData() {
-        return _data;
+        Data temp = {0};
+        if (xSemaphoreTake(_mutex, pdMS_TO_TICKS(5))) {
+            temp = _data;
+            xSemaphoreGive(_mutex);
+        }
+        return temp;
     }
-    
-    
-private:
-    SystemData() {} // 私有构造
-    Data _data;
-};
 
+private:
+    SystemData() { _mutex = xSemaphoreCreateMutex(); }
+    Data _data;
+    SemaphoreHandle_t _mutex;
+};
