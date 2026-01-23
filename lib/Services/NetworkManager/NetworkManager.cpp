@@ -9,7 +9,6 @@ void NetworkManager::init(const char* ssid, const char* password, const char* mq
 }
 
 void NetworkManager::_connectWiFi() {
-    // 只有在完全没连接且没在连接中的时候才发起请求
     if (WiFi.status() != WL_CONNECTED && WiFi.status() != WL_DISCONNECTED) {
         Serial.println("[Net] Starting WiFi connection...");
         WiFi.begin(_ssid, _password);
@@ -26,19 +25,16 @@ bool NetworkManager::_connectMQTT() {
 }
 
 void NetworkManager::loop() {
-    // 1. 检查 WiFi 状态
     if (WiFi.status() != WL_CONNECTED) {
         static unsigned long lastWiFiCheck = 0;
         if (millis() - lastWiFiCheck > 10000) { // 每 10 秒尝试重连一次
             lastWiFiCheck = millis();
             Serial.println("[Net] WiFi not connected, retrying...");
-            // 重新调用 begin 即可，不需要判断复杂的底层原因
             WiFi.begin(_ssid, _password);
         }
         return; 
     }
 
-    // 2. 打印 IP（仅在首次连上时打印）
     static bool ipPrinted = false;
     if (!ipPrinted) {
         Serial.print("[Net] WiFi Connected! IP: ");
@@ -46,7 +42,6 @@ void NetworkManager::loop() {
         ipPrinted = true;
     }
 
-    // 3. 检查 MQTT 状态
     if (!_mqttClient.connected()) {
         unsigned long now = millis();
         if (now - _lastReconnectAttempt > 5000) {

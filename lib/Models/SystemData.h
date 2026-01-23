@@ -17,7 +17,6 @@ public:
     };
 
     void setData(float y, float p, float r, float acc, int fall, uint32_t steps) {
-        // 将 portMAX_DELAY 改为短时间等待，防止死锁
         if (xSemaphoreTake(_mutex, pdMS_TO_TICKS(5))) {
             _data.ypr[0] = y; _data.ypr[1] = p; _data.ypr[2] = r;
             _data.totalAcc = acc;

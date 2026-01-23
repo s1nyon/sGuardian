@@ -7,7 +7,7 @@
 
 TaskHandle_t SensorTaskHandle = NULL;
 TaskHandle_t NetworkTaskHandle = NULL;
-SemaphoreHandle_t serialMutex = NULL; // 用于保护串口输出
+SemaphoreHandle_t serialMutex = NULL; 
 
 IMUManager imu;
 FallDetector detector;
@@ -40,7 +40,7 @@ void SensorTask(void *pvParameters) {
 void NetworkTask(void *pvParameters) {
     safePrint("[Task] NetworkTask started on Core 1");
     // 务必确认你的路由器 IP 和账号密码
-    net.init("Wyz", "13903989778", "mqtt-dashboard.com", 1883);
+    net.init("Wyz", "13903989778", "broker.emqx.io", 1883);
     unsigned long lastUpload = 0;
     unsigned long lastHeartbeat = 0;
 
@@ -48,7 +48,6 @@ void NetworkTask(void *pvParameters) {
         net.loop();
         unsigned long now = millis();
 
-        // 定时在串口打印心跳，证明网络核没挂
         if (now - lastHeartbeat > 2000) {
             SystemData::Data current = SystemData::getInstance()->getData();
             if (xSemaphoreTake(serialMutex, pdMS_TO_TICKS(50))) {
@@ -64,7 +63,8 @@ void NetworkTask(void *pvParameters) {
             SystemData::Data current = SystemData::getInstance()->getData();
             bool urgent = (current.fallLevel > 0);
             if (urgent || (now - lastUpload > 5000)) {
-                JsonDocument doc; // 修正为 v7 写法，消除警告
+                JsonDocument doc; 
+                doc["device_id"] = "ESP32_001";
                 doc["steps"] = current.steps;
                 doc["fall"] = current.fallLevel;
                 doc["acc"] = (int)current.totalAcc;

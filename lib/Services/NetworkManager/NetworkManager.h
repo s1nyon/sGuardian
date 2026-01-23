@@ -8,10 +8,8 @@ public:
     NetworkManager();
     void init(const char* ssid, const char* password, const char* mqttServer, int mqttPort);
     
-    // 维护连接状态
     void loop(); 
     
-    // 发送数据接口
     bool publishData(const char* topic, const JsonDocument& doc);
     bool isConnected();
 
