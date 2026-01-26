@@ -14,6 +14,8 @@ public:
         float totalAcc;
         int fallLevel;
         uint32_t steps;
+        float temperature;
+        float humidity;
     };
 
     void setData(float y, float p, float r, float acc, int fall, uint32_t steps) {
@@ -22,6 +24,14 @@ public:
             _data.totalAcc = acc;
             _data.fallLevel = fall;
             _data.steps = steps;
+            xSemaphoreGive(_mutex);
+        }
+    }
+
+    void setEnvData(float temp, float hum) {
+        if (xSemaphoreTake(_mutex, pdMS_TO_TICKS(5))) {
+            _data.temperature = temp;
+            _data.humidity = hum;
             xSemaphoreGive(_mutex);
         }
     }
